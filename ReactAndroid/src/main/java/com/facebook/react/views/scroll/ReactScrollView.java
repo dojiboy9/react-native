@@ -52,6 +52,7 @@ public class ReactScrollView extends ScrollView implements ReactClippingViewGrou
   private boolean mDoneFlinging;
   private boolean mDragging;
   private boolean mFlinging;
+  private boolean mPagingEnabled = false;
   private boolean mRemoveClippedSubviews;
   private boolean mScrollEnabled = true;
   private boolean mSendMomentumEvents;
@@ -115,6 +116,10 @@ public class ReactScrollView extends ScrollView implements ReactClippingViewGrou
 
   public void setScrollEnabled(boolean scrollEnabled) {
     mScrollEnabled = scrollEnabled;
+  }
+
+  public void setPagingEnabled(boolean pagingEnabled) {
+    mPagingEnabled = pagingEnabled;
   }
 
   @Override
@@ -233,7 +238,9 @@ public class ReactScrollView extends ScrollView implements ReactClippingViewGrou
 
   @Override
   public void fling(int velocityY) {
-    if (mScroller != null) {
+    if (mPagingEnabled) {
+      smoothScrollToPage(velocityX);
+    } else if (mScroller != null) {
       // FB SCROLLVIEW CHANGE
 
       // We provide our own version of fling that uses a different call to the standard OverScroller
@@ -379,5 +386,23 @@ public class ReactScrollView extends ScrollView implements ReactClippingViewGrou
     if (currentScrollY > maxScrollY) {
       scrollTo(getScrollX(), maxScrollY);
     }
+  }
+
+  /**
+   * This will smooth scroll us to the nearest page boundary
+   * It currently just looks at where the content is relative to the page and slides to the nearest
+   * page.  It is intended to be run after we are done scrolling, and handling any momentum
+   * scrolling.
+   */
+  private void smoothScrollToPage(int velocity) {
+    int height = getHeight();
+    int currentY = getScrollX();
+    // TODO (t11123799) - Should we do anything beyond linear accounting of the velocity
+    int predictedY = currentY + velocity;
+    int page = currentY / height;
+    if (predictedY > page * height + height / 2) {
+      page = page + 1;
+    }
+    smoothScrollTo(getScrollX(), page * height);
   }
 }
