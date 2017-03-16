@@ -244,8 +244,7 @@ const ScrollView = React.createClass({
     onContentSizeChange: PropTypes.func,
     /**
      * When true, the scroll view stops on multiples of the scroll view's size
-     * when scrolling. This can be used for horizontal pagination. The default
-     * value is false.
+     * when scrolling. The default value is false.
      */
     pagingEnabled: PropTypes.bool,
     /**
